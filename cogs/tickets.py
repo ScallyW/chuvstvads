@@ -214,9 +214,12 @@ class AcceptRejectView(disnake.ui.View):
     
     @disnake.ui.button(label="✅ Принять", style=disnake.ButtonStyle.green, custom_id="accept_order_btn")
     async def accept_button(self, button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        # Defer сразу, чтобы избежать timeout
+        await inter.response.defer(ephemeral=True)
+        
         # Проверяем что у пользователя есть права
         if not inter.permissions.administrator and not any(r.id == ADMIN_ROLE_ID for r in inter.user.roles):
-            await inter.response.send_message("❌ Только администраторы могут принимать заказы!", ephemeral=True)
+            await inter.edit_original_response(content="❌ Только администраторы могут принимать заказы!")
             return
         
         # Обновляем статус
@@ -246,7 +249,7 @@ class AcceptRejectView(disnake.ui.View):
         except:
             pass
         
-        await inter.response.send_message("✅ Заказ принят!", ephemeral=True)
+        await inter.edit_original_response(content="✅ Заказ принят!")
         
         # Отправляем в канал сообщение с кнопкой закрытия
         close_view = CloseTicketView(self.order_id, self.user_id)

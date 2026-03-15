@@ -282,9 +282,12 @@ class CloseTicketView(disnake.ui.View):
     
     @disnake.ui.button(label="🔒 Закрыть заказ", style=disnake.ButtonStyle.gray, custom_id="close_ticket_btn")
     async def close_button(self, button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        # Defer the interaction to prevent timeout
+        await inter.response.defer()
+        
         # Проверяем что у пользователя есть права
         if not inter.permissions.administrator and not any(r.id == ADMIN_ROLE_ID for r in inter.user.roles):
-            await inter.response.send_message("❌ Только администраторы могут закрывать заказы!", ephemeral=True)
+            await inter.followup.send("❌ Только администраторы могут закрывать заказы!", ephemeral=True)
             return
         
         # Обновляем статус
@@ -357,7 +360,7 @@ class CloseTicketView(disnake.ui.View):
         if not permissions_updated:
             close_embed.add_field(name="⚠️", value="Не удалось изменить права канала", inline=False)
         
-        await inter.response.send_message(embed=close_embed)
+        await inter.followup.send(embed=close_embed)
         
         # Отправляем сообщение с кнопками управления архивом
         archive_view = ArchiveManageView(self.order_id, self.user_id, channel.id)
